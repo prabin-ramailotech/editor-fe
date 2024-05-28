@@ -1,16 +1,18 @@
 import { FolderOpenOutlined } from '@mui/icons-material';
 import Sidebar from '../components/sidebar';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { Button } from 'antd';
+import Cookies from 'js-cookie';
 
 const MyProjects = () => {
   const navigate = useNavigate();
   const labels = {
     label: ['My Projects'],
     icons: [<FolderOpenOutlined />],
-    path: ['/projects'],
+    path: ['/'],
   };
 
+  if (!Cookies.get('go_rules_token')) return <Navigate to="/login" />;
   return (
     <>
       <Sidebar labels={labels}>

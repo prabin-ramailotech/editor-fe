@@ -6,6 +6,7 @@ import { Divider, Input, message } from 'antd';
 import { FolderCopy } from '@mui/icons-material';
 import JsonIcon from '../assets/jsonIcon.webp';
 import api from '../composables/api';
+import { useNavigate } from 'react-router';
 
 const Documents = () => {
   const [open, setOpen] = useState(false);
@@ -19,6 +20,8 @@ const Documents = () => {
   };
 
   const GOBASEURL = import.meta.env.VITE_GORULES_BASEURL;
+
+  const navigate = useNavigate();
 
   const handleCancel = () => {
     setOpen(false);
@@ -87,7 +90,12 @@ const Documents = () => {
                   </div>
                   <div className=" flex justify-between">
                     <p className=" text-[#9e9494]">{item?.updated_at}</p>
-                    <div className=" border border-[#9e9494] px-3 py-1 rounded-lg">Edit</div>
+                    <div
+                      onClick={() => navigate(`/documents/${item.id}`)}
+                      className=" border border-[#9e9494] px-3 py-1 rounded-lg cursor-pointer"
+                    >
+                      Edit
+                    </div>
                   </div>
                 </div>
               ))}

@@ -42,12 +42,12 @@ const Sidebar = ({ children, labels }: sidebarProps) => {
 
   const handleLogout = () => {
     Cookies.remove('go_rules_token');
-    navigate('/');
+    navigate('/login');
   };
 
   return (
     <>
-      {['/projects', '/documents'].includes(currentRoute) && (
+      {['/', '/documents'].includes(currentRoute) && (
         <>
           <Layout hasSider className="mt-0.5 relative flex">
             <Sider

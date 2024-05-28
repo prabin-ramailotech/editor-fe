@@ -11,10 +11,12 @@ import { DirectedGraph } from 'graphology';
 import { hasCycle } from 'graphology-dag';
 import { Stack } from '../components/stack.tsx';
 import { match, P } from 'ts-pattern';
+import Cookies from 'js-cookie';
 
 import classes from './decision-simple.module.css';
 import axios from 'axios';
 import { ThemePreference, useTheme } from '../context/theme.provider.tsx';
+import api from '../composables/api.ts';
 
 enum DocumentFileTypes {
   Decision = 'application/vnd.gorules.decision',
@@ -34,6 +36,7 @@ export const DecisionSimplePage: React.FC = () => {
   const [graph, setGraph] = useState<DecisionContent>({ nodes: [], edges: [] });
   const [fileName, setFileName] = useState('Untitled Decision');
   const [graphTrace, setGraphTrace] = useState<Simulation>();
+  const [brandLogo, setBrandLogo] = useState('/favicon.svg');
 
   useEffect(() => {
     const templateParam = searchParams.get('template');
@@ -46,22 +49,20 @@ export const DecisionSimplePage: React.FC = () => {
     loadGraph();
   }, []);
 
-  // Using hard coded path
-  // /test1
-  const BASE_PATH = import.meta.env.VITE_APP_BASE_PATH;
-
-  // Using path from search params
-  // ?path=http://localhost:8000/graphs/test1
-  const path = searchParams.get('path');
-  const isValidPath = path && /^(ftp|http|https):\/\/[^ "]+$/.test(path);
+  const BASE_PATH = import.meta.env.VITE_GORULES_BASEURL;
 
   const loadGraph = async () => {
     try {
-      if (isValidPath || id) {
-        const res = await fetch(`${BASE_PATH}/graphs/${id}`);
-        // const res = await fetch(path);
-        const { graph } = await res.json();
-        setGraph(graph);
+      if (id) {
+        const { data } = await api.get(`${BASE_PATH}/v1/rules/${id}`);
+        console.log('data', data);
+        if (data?.data?.data) {
+          setFileName(data.data.data.name);
+          const brandLogo = Cookies.get('go_rules_brand_logo');
+          console.log('brandLogoL: ', brandLogo);
+          if (brandLogo) setBrandLogo(brandLogo);
+          setGraph(JSON.parse(data.data.data.rules_content?.replaceAll("'", '"')));
+        }
       }
     } catch (err) {
       displayError(err);
@@ -154,22 +155,11 @@ export const DecisionSimplePage: React.FC = () => {
       }
     }
 
-    if (isValidPath || id) {
+    if (id) {
       const formData = new FormData();
-      formData.append('graph', new Blob([json], { type: 'application/json' }));
-
-      await fetch(`${BASE_PATH}/graphs/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({
-          graph: { contentType: DocumentFileTypes.Decision, ...graph },
-        }),
-      });
-      //   await fetch(path, {
-      //     method: 'PATCH',
-      //     body: JSON.stringify({
-      //       graph: { contentType: DocumentFileTypes.Decision, ...graph },
-      //     }),
-      //   });
+      formData.append('rules', new Blob([json], { type: 'application/json' }));
+      formData.append('name', fileName);
+      await api.put(`${BASE_PATH}/v1/rules/${id}/update/`, formData);
     }
   };
 
@@ -300,7 +290,7 @@ export const DecisionSimplePage: React.FC = () => {
                 type="text"
                 target="_blank"
                 href="https://gorules.io"
-                icon={<img height={24} width={24} src={'/favicon.svg'} />}
+                icon={<img height={24} width={24} src={brandLogo} />}
               />
               <Divider type="vertical" style={{ margin: 0 }} />
               <div className={classes.headingContent}>

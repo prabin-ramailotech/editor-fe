@@ -38,7 +38,8 @@ const LoginScreen = () => {
       });
       message.success(response?.data?.status_message);
       Cookies.set('go_rules_token', response?.data?.data?.token);
-      navigate('/projects');
+      Cookies.set('go_rules_brand_logo', response?.data?.data?.company_logo);
+      navigate('/');
     } catch (error: unknown) {
       message.error('Invalid Otp');
       setError('Invalid otp!');

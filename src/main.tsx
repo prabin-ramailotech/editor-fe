@@ -25,12 +25,12 @@ import { ThemeContextProvider } from './context/theme.provider.tsx';
 
 const router = createBrowserRouter([
   { path: '/login', element: <LoginScreen /> },
+  { path: '/', element: <MyProjects /> },
   {
-    path: '/:id',
-    element: <DecisionSimplePage />,
+    path: '/documents',
+    element: <Documents />,
   },
-  { path: 'projects', element: <MyProjects /> },
-  { path: '/documents', element: <Documents /> },
+  { path: '/documents/:id', element: <DecisionSimplePage /> },
   {
     path: '*',
     element: <NotFoundPage />,
