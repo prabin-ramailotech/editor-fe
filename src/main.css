@@ -1,15 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 body {
-    margin: 0;
+  margin: 0;
 }
 
 .grl-dn__header__icon {
-    box-sizing: content-box;
+  box-sizing: content-box;
 }
 
-body[data-theme="dark"] {
-    background: black;
+body[data-theme='dark'] {
+  background: black;
 }
 
-body[data-theme="light"] {
-    background: white;
+body[data-theme='light'] {
+  background: white;
+}
+
+.ant-otp-input {
+  padding-inline: 12px !important;
+  padding: 15px !important;
+}
+
+.ant-menu-item-selected {
+  border-right: 4px solid blue !important;
+  border-radius: inherit !important;
 }

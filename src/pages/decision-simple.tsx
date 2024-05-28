@@ -4,7 +4,7 @@ import { BulbOutlined, CheckOutlined, PlayCircleOutlined } from '@ant-design/ico
 import { decisionTemplates } from '../assets/decision-templates';
 import { displayError } from '../helpers/error-message.ts';
 import { DecisionContent, DecisionEdge, DecisionNode } from '../helpers/graph.ts';
-import { useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { DecisionGraph, DecisionGraphRef, GraphSimulator, Simulation } from '@gorules/jdm-editor';
 import { PageHeader } from '../components/page-header.tsx';
 import { DirectedGraph } from 'graphology';
@@ -29,6 +29,7 @@ export const DecisionSimplePage: React.FC = () => {
   const { themePreference, setThemePreference } = useTheme();
 
   const [searchParams] = useSearchParams();
+  const { id } = useParams();
   const [fileHandle, setFileHandle] = useState<FileSystemFileHandle>();
   const [graph, setGraph] = useState<DecisionContent>({ nodes: [], edges: [] });
   const [fileName, setFileName] = useState('Untitled Decision');
@@ -40,6 +41,32 @@ export const DecisionSimplePage: React.FC = () => {
       loadTemplateGraph(templateParam);
     }
   }, []);
+
+  useEffect(() => {
+    loadGraph();
+  }, []);
+
+  // Using hard coded path
+  // /test1
+  const BASE_PATH = import.meta.env.VITE_APP_BASE_PATH;
+
+  // Using path from search params
+  // ?path=http://localhost:8000/graphs/test1
+  const path = searchParams.get('path');
+  const isValidPath = path && /^(ftp|http|https):\/\/[^ "]+$/.test(path);
+
+  const loadGraph = async () => {
+    try {
+      if (isValidPath || id) {
+        const res = await fetch(`${BASE_PATH}/graphs/${id}`);
+        // const res = await fetch(path);
+        const { graph } = await res.json();
+        setGraph(graph);
+      }
+    } catch (err) {
+      displayError(err);
+    }
+  };
 
   const loadTemplateGraph = (template: string) => {
     const templateGraph = match(template)
@@ -110,13 +137,14 @@ export const DecisionSimplePage: React.FC = () => {
       return;
     }
 
+    const json = JSON.stringify({ contentType: DocumentFileTypes.Decision, ...graph }, null, 2);
+
     if (fileHandle) {
       let writable: FileSystemWritableFileStream | undefined = undefined;
       try {
         writable = await fileHandle.createWritable();
         checkCyclic();
 
-        const json = JSON.stringify({ contentType: DocumentFileTypes.Decision, ...graph }, null, 2);
         await writable.write(json);
         message.success('File saved');
       } catch (e) {
@@ -124,6 +152,24 @@ export const DecisionSimplePage: React.FC = () => {
       } finally {
         writable?.close?.();
       }
+    }
+
+    if (isValidPath || id) {
+      const formData = new FormData();
+      formData.append('graph', new Blob([json], { type: 'application/json' }));
+
+      await fetch(`${BASE_PATH}/graphs/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          graph: { contentType: DocumentFileTypes.Decision, ...graph },
+        }),
+      });
+      //   await fetch(path, {
+      //     method: 'PATCH',
+      //     body: JSON.stringify({
+      //       graph: { contentType: DocumentFileTypes.Decision, ...graph },
+      //     }),
+      //   });
     }
   };
 

@@ -18,13 +18,19 @@ import 'ace-builds/src-noconflict/theme-chrome';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { DecisionSimplePage } from './pages/decision-simple.tsx';
 import { NotFoundPage } from './pages/not-found';
+import LoginScreen from './pages/login.tsx';
+import MyProjects from './pages/projects.tsx';
+import Documents from './pages/documents.tsx';
 import { ThemeContextProvider } from './context/theme.provider.tsx';
 
 const router = createBrowserRouter([
+  { path: '/login', element: <LoginScreen /> },
   {
-    path: '/',
+    path: '/:id',
     element: <DecisionSimplePage />,
   },
+  { path: 'projects', element: <MyProjects /> },
+  { path: '/documents', element: <Documents /> },
   {
     path: '*',
     element: <NotFoundPage />,
